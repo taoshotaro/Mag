@@ -10,6 +10,7 @@ extension NSLayoutConstraint {
             fatalError("First item in constraint is nil.")
         }
 
+        (item as? View)?.translatesAutoresizingMaskIntoConstraints = false
         let constraint = NSLayoutConstraint(
             item: item,
             attribute: firstAttribute,
@@ -20,6 +21,8 @@ extension NSLayoutConstraint {
             constant: constant
         )
         constraint.priority = priority
-        return constraint
+        constraint.shouldBeArchived = shouldBeArchived
+        constraint.identifier = identifier
+        return LayoutConstraintWrapper(origin: constraint)
     }
 }

@@ -27,6 +27,31 @@ Add the following to your `Cartfile`:
 github "cats-oss/Mag"
 ```
 
+## Example
+
+```swift
+let redView = UIView(frame: .zero)
+redView.backgroundColor = .red
+view.addSubview(redView)
+redView.sizeAnchor == CGSize(width: 100, height: 100)
+redView.leadingAnchor == view.leadingAnchor + 100
+redView.topAnchor == (view.bottomAnchor - 100) * 0.5 ~ 999
+
+let label = UILabel(frame: .zero)
+label.text = "Example"
+label.textAlignment = .center
+redView.addSubview(label)
+label.edgeAnchor == redView.edgeAnchor
+
+let blueView = UIView(frame: .zero)
+blueView.backgroundColor = .blue
+view.addSubview(blueView)
+blueView.sizeAnchor == redView.sizeAnchor
+blueView.centerAnchor == redView.centerAnchor + CGPoint(x: 100, y: -100)
+```
+
+<img alt="Example" src="https://user-images.githubusercontent.com/5707132/72708416-ff793e80-3ba5-11ea-88f3-541ba1a5005a.png" width="414">
+
 ## Usage
 
 ### Alignment
@@ -44,6 +69,14 @@ redView.centerYAnchor <= view.centerYAnchor - 20
 blueView.centerAnchor == redView.centerAnchor + CGPoint(x: 100, y: -100)
 // blueView.centerXAnchor.constraint(equalTo: redView.centerXAnchor, constant: 100)
 // blueView.centerYAnchor.constraint(equalTo: redView.centerYAnchor, constant: -100)
+
+label.horizontalAnchor == redView.horizontalAnchor + UIEdgeInsets(top: 5, left: 10, bottom: 5, right: 10)
+// label.leadingAnchor.constraint(equalTo: redView.leadingAnchor, constant: 10)
+// label.trailingAnchor.constraint(equalTo: redView.trailingAnchor, constant: -10)
+
+label.verticalAnchor == redView.verticalAnchor + UIEdgeInsets(top: 5, left: 10, bottom: 5, right: 10)
+// label.topAnchor.constraint(equalTo: redView.topAnchor, constant: 5),
+// label.bottomAnchor.constraint(equalTo: redView.bottomAnchor, constant: -5)
 
 label.edgeAnchor == redView.edgeAnchor + UIEdgeInsets(top: 5, left: 10, bottom: 5, right: 10)
 // label.topAnchor.constraint(equalTo: redView.topAnchor, constant: 5),
@@ -93,19 +126,70 @@ redView.centerAnchor == view.centerAnchor ~ 900
 
 ### Constraints
 
-Comparison operators return `NSLayoutConstraint` which has already activated. If target anchors are composite anchors, returns multiple `NSLayoutConstraint`. (e.g. `[NSLayoutConstraint]`)
+Comparison operators return `NSLayoutConstraint`.
 
 ```swift
 let constraint = redView.leadingAnchor == view.leadingAnchor
 // returns NSLayoutConstraint
-constraint.isActive = false
+constraint.isActive = true
+```
 
+If target anchors are composite anchors, returns multiple `NSLayoutConstraint`. (e.g. `[NSLayoutConstraint]`)
+
+```swift
 let constraints = redView.centerAnchor == view.centerAnchor
 // returns [NSLayoutConstraint]
-NSLayoutConstraint.deactivate(constraints)
+NSLayoutConstraint.activate(constraints)
 ```
 
 If `firstItem` in `NSLayoutConstraint` is `UIView` (or `NSView`), `translatesAutoresizingMaskIntoConstraints` is set to `false`.
+
+### Activation
+
+Comparison operators return `NSLayoutConstraint` which has never activated.
+
+If the constraint deinits without being activated, it activates automatically.
+
+```swift
+_ = redView.leadingAnchor == view.leadingAnchor
+// NSLayoutConstraint activates automatically
+```
+
+If you want to activate manually, set `true` to `isActivate` or executes activate methods.
+
+#### Singular Constraint
+
+```swift
+var constraint: NSLayoutConstraint? {
+    didSet {
+        oldValue?.isActivate = false
+        constraint?.isActivate = true
+    }
+}
+
+constraint = redView.leadingAnchor == view.leadingAnchor
+```
+
+#### Multiple Constraints
+
+`Mag` extends `NSLayoutConstraint` deactivate and activate method.
+
+```swift
+var constraints: [NSLayoutConstraint] = [] {
+    didSet {
+        NSLayoutConstraint.deactivate(oldValue, beforeActivate: constraints)
+    }
+}
+
+constraints = redView.centerAnchor == view.centerAnchor
+```
+
+The following process is the same.
+
+```swift
+var constraints: [NSLayoutConstraint] = []
+constraints.replaceActivatedConstraints(redView.centerAnchor == view.centerAnchor)
+```
 
 ## LICENSE
 Under the MIT license. See LICENSE file for details.
