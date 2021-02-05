@@ -5,11 +5,7 @@ import PackageDescription
 
 let package = Package(
     name: "Mag",
-    platforms: [
-        .iOS(.v10),
-        .tvOS(.v10),
-        .macOS(.v10_12)
-    ],
+    platforms: [.iOS(.v10), .tvOS(.v10), .macOS(.v10_12)],
     products: [
         .library(
             name: "Mag",
